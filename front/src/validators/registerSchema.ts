@@ -1,33 +1,44 @@
-import * as Yup from 'yup';
+import * as Yup from "yup";
 
-//Definir la interfaz de los valores del formulario = register
+// Interfaz que coincide con lo que espera el backend
+// registerSchema.ts
 export interface RegisterFormValuesType { 
-    email: string;
-    password: string;
-    confirmPassword: string;
-    name: string;
-    address: string;
-    phone: string;
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string; // solo validación, no se manda al back
+  role: string;
+  fullName: string;
+  phone: string;
+}
+
+// Valores iniciales
+export const registerInitalValues: RegisterFormValuesType = { 
+  username: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  role: "user",
+  fullName: "",
+  phone: "",
 };
 
-//Definir los valores iniciales de mi formulario de register
-export const registerInitalValues = { 
-    email: "",
-    password: "",
-    confirmPassword: "",
-    name: "",
-    address: "",
-    phone: "",
-};
-
-// Esquema de validacion para este formulario con YUP
-
+// Esquema de validación con Yup
 export const registerValidationSchema = Yup.object({
-    email: Yup.string().email("Invalid email").required("The Email is mandatory."),
-    password: Yup.string().min(6, "The password must be at least 6 characters long").required("The password is mandatory."),
-    confirmPassword: Yup.string().oneOf([Yup.ref("password")],"The 2 passwords must be the same.").required("Password confirmation required"),
-    name: Yup.string().required("This field is mandatory."),
-    address: Yup.string().required("This field is mandatory."),
-    phone: Yup.string().matches(/^[0-9+\-\s()]+$/,"Phone must have just letters and numbers").required("This field is mandatory."),
-
-})
+  username: Yup.string()
+    .required("El nombre de usuario es obligatorio."),
+  email: Yup.string()
+    .email("El correo no es válido")
+    .required("El correo es obligatorio."),
+  password: Yup.string()
+    .min(6, "La contraseña debe tener al menos 6 caracteres")
+    .required("La contraseña es obligatoria."),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Las contraseñas no coinciden")
+    .required("La confirmación es obligatoria"),
+  fullName: Yup.string()
+    .required("El nombre completo es obligatorio."),
+  phone: Yup.string()
+    .matches(/^[0-9+\-\s()]+$/, "El teléfono solo puede tener números y símbolos válidos")
+    .required("El teléfono es obligatorio."),
+});

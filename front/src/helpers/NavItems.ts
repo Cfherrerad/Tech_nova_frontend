@@ -18,13 +18,5 @@ export const NavItems = [
     {
         name: "Contacto",
         route: PATHROUTES.CONTACT
-    },
-    {
-        name: "Login",
-        route: PATHROUTES.LOGIN
-    },
-    {
-        name: "Registrate",
-        route: PATHROUTES.REGISTER
-    },        
+    },       
 ]

@@ -1,16 +1,19 @@
 import * as Yup from "yup";
 
 export interface LoginFormValuesType {
-    email: string;
-    password: string;
+  username: string;
+  password: string;
 }
 
 export const loginInitialValues: LoginFormValuesType = {
-    email: "",
+    username: "",
     password: "",
 };
 
 export const loginValidationSchema = Yup.object({
-    email: Yup.string().email("Invalid email").required("The Email is mandatory."),
-    password: Yup.string().min(6, "The password must be at least 6 characters long").required("The password is mandatory.")
+  username: Yup.string()
+    .required("El username o email es obligatorio"),
+  password: Yup.string()
+    .min(6, "La contraseña debe tener mínimo 6 caracteres")
+    .required("La contraseña es obligatoria"),
 });

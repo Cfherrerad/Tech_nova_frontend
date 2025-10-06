@@ -1,59 +1,102 @@
-'use client'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/context/AuthContext.tsx
+"use client";
 
-import { userSessionInterface } from "@/interfaces/userSession.interface";
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  loginUser as loginService,
+  registerUser as registerService,
+  logoutUser as logoutService,
+} from "@/services/auth.services";
+import type { LoginFormValuesType } from "@/validators/loginSchema";
+import type { RegisterFormValuesType } from "@/validators/registerSchema";
 
-// Interfaz que define los valores
-interface AuthContextProps { 
-    dataUser: userSessionInterface | null;
-    setDataUser: (dataUser: userSessionInterface | null) => void;
-    logout: () => void;
-}
-//TODO crear un hook que se encargue de crear item, eliminar item, setear item
-// Creacion del context
-const AuthContext = createContext<AuthContextProps>({
-    dataUser: null,
-    setDataUser: () => {},
-    logout: () => {},
-});
-
-interface AuthProviderProps{
-    children: React.ReactElement;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    const [dataUser, setDataUser] = useState<userSessionInterface | null>(null);
-    
-    //Logica de useEffect
-    useEffect(() => {
-        if(dataUser) {
-            localStorage.setItem("userSession", JSON.stringify(dataUser));
-        }
-    }, [dataUser])
-
-    useEffect(() => {
-        if (typeof window !== "undefined" && window.localStorage) {
-            const dataUser = localStorage.getItem("userSession");
-            if (dataUser) {
-                setDataUser(JSON.parse(dataUser));
-            }
-        }
-    }, []);
-
-    //Metodos disponibles
-    const logout = () => {
-        setDataUser(null);
-        if (typeof window !== "undefined" && window.localStorage) {
-            localStorage.removeItem("userSession");
-        }
-    };
-
-
-    return (
-        <AuthContext.Provider value={{ dataUser, setDataUser, logout}}>
-            {children}
-        </AuthContext.Provider>
-    );
+type User = {
+  id: string;
+  username: string;
+  email: string;
+  fullName?: string;
+  phone?: string;
+  avatar?: string;
+  role?: string;
+  status?: string;
+  lastLogin?: string;
+  [key: string]: any;
 };
 
-export const useAuth = () => useContext(AuthContext);
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  isAuthenticated: boolean;
+  login: (data: LoginFormValuesType) => Promise<any>;
+  register: (data: RegisterFormValuesType) => Promise<any>;
+  logout: () => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Cargar usuario desde localStorage
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
+  }, []);
+
+const login = async (data: LoginFormValuesType) => {
+  const res = await loginService(data);
+
+  if (res?.user && res?.token) {
+    // Guardar en localStorage
+    localStorage.setItem("user", JSON.stringify(res.user));
+    localStorage.setItem("token", res.token);
+
+    // Actualizar estado
+    setUser(res.user);
+
+    // Redirigir al inicio
+    router.push("/");
+  }
+
+  return res;
+};
+
+  const register = async (data: RegisterFormValuesType) => {
+    const res = await registerService(data);
+    return res;
+  };
+
+  const logout = () => {
+    logoutService(); // limpia localStorage
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUser(null);
+    router.push("/login");
+  };
+
+  const value = {
+    user,
+    loading,
+    isAuthenticated: !!user,
+    login,
+    register,
+    logout,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
+};
+
+export { AuthContext };

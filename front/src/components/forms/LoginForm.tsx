@@ -1,6 +1,6 @@
 "use client";
 
-import { loginUser } from "@/services/auth.services";
+import { useAuth } from "@/context/AuthContext";
 import {
   LoginFormValuesType,
   loginInitialValues,
@@ -9,38 +9,48 @@ import {
 import { useFormik } from "formik";
 
 const LoginForm = () => {
+  const { login } = useAuth(); // hook context
+
   const formik = useFormik<LoginFormValuesType>({
     initialValues: loginInitialValues,
     validationSchema: loginValidationSchema,
     onSubmit: async (values, { resetForm }) => {
-      const response = await loginUser(values);
-      // TODO => AGREGAR LOGICA PARA LA PERSISTENCIA DE LA SESION
-      console.log("Successful login with server response:", response);
-      resetForm();
+      try {
+        
+        const response = await login(values);
+
+        console.log("Successful login with server response:", response);
+
+        resetForm();
+        
+      } catch (error) {
+        console.error("Error al iniciar sesión:", error);
+        alert("Error al iniciar sesión, revisa tus credenciales");
+      }
     },
   });
 
   return (
     <form className="flex flex-col gap-4" onSubmit={formik.handleSubmit}>
-      {/* Campo Email */}
       <div className="flex flex-col">
-        <label htmlFor="email" className="text-white mb-1">
-          Email
+        <label htmlFor="username" className="text-white mb-1">
+          Email o usuario
         </label>
         <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
+          id="username"
+          name="username"
+          type="text"
+          autoComplete="username"
           required
-          value={formik.values.email}
+          value={formik.values.username}
           onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           className="bg-transparent border border-gray-600 text-white px-4 py-2 rounded-xl focus:outline-none focus:border-blue-400 placeholder-gray-500"
-          placeholder="Ingresa tu email"
+          placeholder="Ingresa tu email o usuario"
         />
-        {formik.errors.email && (
-          <p id="email-error" className="text-red-500 text-sm mt-1">
-            {formik.errors.email}
+        {formik.touched.username && formik.errors.username && (
+          <p id="username-error" className="text-red-500 text-sm mt-1">
+            {formik.errors.username}
           </p>
         )}
       </div>
@@ -57,10 +67,11 @@ const LoginForm = () => {
           required
           value={formik.values.password}
           onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           className="bg-transparent border border-gray-600 text-white px-4 py-2 rounded-xl focus:outline-none focus:border-blue-400 placeholder-gray-500"
           placeholder="Ingresa tu contraseña"
         />
-        {formik.errors.password && (
+        {formik.touched.password && formik.errors.password && (
           <p id="password-error" className="text-red-500 text-sm mt-1">
             {formik.errors.password}
           </p>
