@@ -1,97 +1,136 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { NavItems } from '@/helpers/NavItems'
 import { useAuth } from '@/context/AuthContext'
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
+
+const MySwal = withReactContent(Swal)
 
 const NavBar = () => {
   const { user, logout } = useAuth()
+  const pathname = usePathname()
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const handleLogout = async () => {
+    const result = await MySwal.fire({
+      title: '¿Cerrar sesión?',
+      text: 'Tu sesión actual se cerrará.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cerrar sesión',
+      cancelButtonText: 'Cancelar',
+      background: '#0a0f1c',
+      color: '#e5e7eb',
+      confirmButtonColor: '#3B82F6',
+      cancelButtonColor: '#6B7280',
+      customClass: {
+        popup: 'rounded-2xl shadow-lg border border-[#1b2447]',
+        title: 'text-white',
+        confirmButton: 'text-white font-semibold',
+      },
+    })
+
+    if (result.isConfirmed) {
+      logout()
+      await MySwal.fire({
+        icon: 'success',
+        title: 'Sesión cerrada',
+        text: 'Has salido correctamente.',
+        background: '#0a0f1c',
+        color: '#e5e7eb',
+        confirmButtonColor: '#3B82F6',
+      })
+      setMenuOpen(false)
+    }
+  }
 
   return (
-    <nav className="w-screen h-[70px] flex items-center justify-between border-b border-[#1b2447] bg-[#0a0f1c]">
+    <nav className="w-full h-[70px] flex items-center justify-between border-b border-[#1b2447] bg-[#0a0f1c] px-4 relative">
       {/* Logo */}
-      <Link href="/">
-        <Image className="mx-4" src="/logo.png" alt="Logo" width={45} height={45} />
+      <Link href="/" className="flex items-center">
+        <Image src="/logo.png" alt="Logo" width={45} height={45} className="mr-2" />
+        <span className="text-white font-bold text-lg hidden sm:block">TechNova</span>
       </Link>
 
-      {/* Items de navegación */}
-      <div className="flex items-center justify-between mr-4">
-        {NavItems.map((navigationitem) => (
+      {/* Botón menú hamburguesa (solo móvil) */}
+      <button
+        className="text-gray-300 text-2xl md:hidden"
+        onClick={() => setMenuOpen(!menuOpen)}
+        aria-label="Abrir menú"
+      >
+        {menuOpen ? '✖' : '☰'}
+      </button>
+
+      {/* Menú principal */}
+      <div
+        className={`
+          flex-col md:flex md:flex-row md:items-center absolute md:static top-[70px] right-0 
+          bg-[#0a0f1c] md:bg-transparent w-full md:w-auto z-50 transition-all duration-300
+          ${menuOpen ? 'flex' : 'hidden'}
+        `}
+      >
+        {NavItems.map((item) => (
           <Link
-            href={navigationitem.route}
-            key={navigationitem.name}
+            href={item.route}
+            key={item.name}
             prefetch={false}
-            className="
-              mx-2
-              px-4
-              py-2
-              text-gray-300
-              rounded-xl
-              hover:bg-[#141b2e]
-              hover:text-white
-              transition-all
-              duration-200
-            "
+            onClick={() => setMenuOpen(false)}
+            className={`
+              mx-2 px-4 py-2 text-center rounded-xl transition-all duration-200
+              ${pathname === item.route
+                ? 'bg-blue-500 text-white'
+                : 'text-gray-300 hover:bg-[#141b2e] hover:text-white'}
+            `}
           >
-            {navigationitem.name}
+            {item.name}
           </Link>
         ))}
 
-        {/* Condicional según autenticación */}
+        {/* 🔹 Solo visible para ADMIN */}
+        {user?.role === 'admin' && (
+          <Link
+            href="/services/new"
+            onClick={() => setMenuOpen(false)}
+            className={`
+              mx-2 px-4 py-2 text-center rounded-xl transition-all duration-200
+              ${pathname === '/services/new'
+                ? 'bg-green-600 text-white'
+                : 'text-gray-300 hover:bg-green-700 hover:text-white'}
+            `}
+          >
+            Crear servicio
+          </Link>
+        )}
+
+        {/* 🔹 Autenticación */}
         {!user ? (
           <>
             <Link
               href="/login"
-              className="
-                mx-2
-                px-4
-                py-2
-                text-gray-300
-                rounded-xl
-                hover:bg-[#141b2e]
-                hover:text-white
-                transition-all
-                duration-200
-              "
+              onClick={() => setMenuOpen(false)}
+              className="mx-2 px-4 py-2 text-gray-300 text-center rounded-xl hover:bg-[#141b2e] hover:text-white transition-all duration-200"
             >
               Iniciar sesión
             </Link>
             <Link
               href="/register"
-              className="
-                mx-2
-                px-4
-                py-2
-                text-gray-300
-                rounded-xl
-                hover:bg-[#141b2e]
-                hover:text-white
-                transition-all
-                duration-200
-              "
+              onClick={() => setMenuOpen(false)}
+              className="mx-2 px-4 py-2 text-gray-300 text-center rounded-xl hover:bg-[#141b2e] hover:text-white transition-all duration-200"
             >
               Registrate
             </Link>
           </>
         ) : (
-          <div className="flex items-center">
-            {/* Mostrar el username */}
-            <span className="text-gray-300 mx-2">Hola, {user.username}</span>
+          <div className="flex flex-col md:flex-row items-center">
+            <span className="text-gray-300 mx-2 my-2 md:my-0">Hola, {user.username}</span>
             <button
-              onClick={logout}
-              className="
-                mx-2
-                px-4
-                py-2
-                text-gray-300
-                rounded-xl
-                hover:bg-[#141b2e]
-                hover:text-white
-                transition-all
-                duration-200
-              "
+              onClick={handleLogout}
+              className="mx-2 px-4 py-2 text-gray-300 rounded-xl hover:bg-[#141b2e] hover:text-white transition-all duration-200"
             >
               Cerrar sesión
             </button>

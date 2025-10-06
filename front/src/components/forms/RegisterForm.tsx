@@ -8,6 +8,10 @@ import {
   registerValidationSchema,
 } from "@/validators/registerSchema";
 import { useFormik } from "formik";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
+const MySwal = withReactContent(Swal);
 
 const RegisterForm = () => {
   const formik = useFormik<RegisterFormValuesType>({
@@ -19,15 +23,25 @@ const RegisterForm = () => {
 
         console.log("Usuario creado correctamente:", response);
 
-        alert("Usuario creado correctamente");
+        await MySwal.fire({
+          icon: "success",
+          title: "¡Registro exitoso!",
+          text: "El usuario ha sido creado correctamente.",
+          confirmButtonColor: "#3B82F6",
+        });
 
         resetForm();
       } catch (error: any) {
         console.error("Error en el registro:", error);
-        alert(
-          error?.response?.data?.message ||
-            "Hubo un error al registrar el usuario"
-        );
+
+        await MySwal.fire({
+          icon: "error",
+          title: "Error en el registro",
+          text:
+            error?.response?.data?.message ||
+            "Hubo un error al registrar el usuario. Intenta nuevamente.",
+          confirmButtonColor: "#EF4444",
+        });
       }
     },
   });

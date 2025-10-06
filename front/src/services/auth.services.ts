@@ -69,8 +69,6 @@ export const loginUser = async (userData: LoginFormValuesType) => {
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
       }
-
-      alert("Inicio de sesión exitoso");
       console.log("Usuario logueado y guardado en localStorage:", data.user);
 
       return data;

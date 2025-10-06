@@ -27,6 +27,7 @@ type User = {
 
 interface AuthContextType {
   user: User | null;
+  token: string | null; // 👈 añadido
   loading: boolean;
   isAuthenticated: boolean;
   login: (data: LoginFormValuesType) => Promise<any>;
@@ -38,51 +39,58 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null); // 👈 añadido
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // 🔹 Cargar usuario y token desde localStorage
   useEffect(() => {
-    // Cargar usuario desde localStorage
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const storedToken = localStorage.getItem("token");
+
+    if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedToken) setToken(storedToken);
+
     setLoading(false);
   }, []);
 
-const login = async (data: LoginFormValuesType) => {
-  const res = await loginService(data);
+  // 🔹 Login
+  const login = async (data: LoginFormValuesType) => {
+    const res = await loginService(data);
 
-  if (res?.user && res?.token) {
-    // Guardar en localStorage
-    localStorage.setItem("user", JSON.stringify(res.user));
-    localStorage.setItem("token", res.token);
+    if (res?.user && res?.token) {
+      localStorage.setItem("user", JSON.stringify(res.user));
+      localStorage.setItem("token", res.token);
 
-    // Actualizar estado
-    setUser(res.user);
+      setUser(res.user);
+      setToken(res.token);
 
-    // Redirigir al inicio
-    router.push("/");
-  }
+      router.push("/");
+    }
 
-  return res;
-};
+    return res;
+  };
 
+  // 🔹 Registro
   const register = async (data: RegisterFormValuesType) => {
     const res = await registerService(data);
     return res;
   };
 
+  // 🔹 Logout
   const logout = () => {
-    logoutService(); // limpia localStorage
+    logoutService();
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     setUser(null);
+    setToken(null);
     router.push("/login");
   };
 
+  // 🔹 Valor del contexto
   const value = {
     user,
+    token,
     loading,
     isAuthenticated: !!user,
     login,
@@ -93,6 +101,7 @@ const login = async (data: LoginFormValuesType) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// Hook para usar el contexto
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
