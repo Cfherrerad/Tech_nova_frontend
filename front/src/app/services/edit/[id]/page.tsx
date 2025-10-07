@@ -30,7 +30,7 @@ export default function EditServicePage() {
   useEffect(() => {
     const fetchService = async () => {
       try {
-        const res = await fetch(`http://localhost:4000/api/services/${id}`);
+        const res = await fetch(`https://technova-backend-kappa.vercel.app/api/services/${id}`);
         if (!res.ok) throw new Error('Error al obtener el servicio');
         const data = await res.json();
         setService(data);
@@ -66,7 +66,7 @@ export default function EditServicePage() {
 
       if (service.imageFile) formData.append('image', service.imageFile);
 
-      const res = await fetch(`http://localhost:4000/api/services/${id}`, {
+      const res = await fetch(`https://technova-backend-kappa.vercel.app/api/services/${id}`, {
         method: 'PUT',
         body: formData,
         headers: { Authorization: `Bearer ${token}` }

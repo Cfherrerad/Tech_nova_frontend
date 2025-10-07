@@ -29,7 +29,7 @@ const ServiceForm = () => {
         formData.append('description', values.description);
         if (values.image) formData.append('image', values.image);
 
-        const response = await fetch('http://localhost:4000/api/services', {
+        const response = await fetch('https://technova-backend-kappa.vercel.app/api/services', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,

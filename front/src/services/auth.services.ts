@@ -9,7 +9,7 @@ export const registerUser = async (userData: RegisterFormValuesType) => {
 
     const { confirmPassword, ...dataToSend } = userData;
 
-    const response = await fetch("http://localhost:4000/api/auth/register", {
+    const response = await fetch("https://technova-backend-kappa.vercel.app/api/auth/register", {
       method: "POST",
       headers: {
         "Content-type": "application/json",
@@ -48,7 +48,7 @@ export const loginUser = async (userData: LoginFormValuesType) => {
       password: userData.password,
     };
 
-    const response = await fetch("http://localhost:4000/api/auth/login", {
+    const response = await fetch("https://technova-backend-kappa.vercel.app/api/auth/login", {
       method: "POST",
       headers: {
         "Content-type": "application/json",

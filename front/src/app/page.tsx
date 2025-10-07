@@ -26,7 +26,7 @@ export default async function Home() {
   let services: Service[] = [];
 
   try {
-    const res = await fetch(`http://localhost:4000/api/services`, {
+    const res = await fetch(`https://technova-backend-kappa.vercel.app/api/services`, {
       next: { revalidate: 60 }, // ✅ Revalidación cada 60s (ISR)
     });
 

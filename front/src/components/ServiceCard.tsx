@@ -41,7 +41,7 @@ const ServiceCard = ({ service }: { service: Service }) => {
     if (result.isConfirmed) {
       try {
         const res = await fetch(
-          `http://localhost:4000/api/services/${service._id}`,
+          `https://technova-backend-kappa.vercel.app/api/services/${service._id}`,
           { method: "DELETE", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` } }
         );
 
@@ -63,6 +63,59 @@ const ServiceCard = ({ service }: { service: Service }) => {
           icon: "error",
           title: "Error",
           text: "No se pudo eliminar el servicio.",
+          background: "#0a0f1c",
+          color: "#e5e7eb",
+          confirmButtonColor: "#3B82F6",
+        });
+      }
+    }
+  };
+
+  // 🔹 Nueva función para solicitar servicio con notas
+  const handleRequestService = async () => {
+    if (!service.active) return;
+
+    const { value: notes } = await MySwal.fire({
+      title: "Agregar notas",
+      input: 'textarea',
+      inputPlaceholder: 'Escribe aquí cualquier detalle sobre la solicitud',
+      showCancelButton: true,
+      confirmButtonText: 'Enviar solicitud',
+      cancelButtonText: 'Cancelar',
+      background: "#0a0f1c",
+      color: "#e5e7eb",
+      inputAttributes: {
+        'aria-label': 'Notas de la solicitud'
+      },
+    });
+
+    if (notes !== undefined) {
+      try {
+        const res = await fetch("https://technova-backend-kappa.vercel.app/api/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ serviceId: service._id, notes }),
+        });
+
+        if (!res.ok) throw new Error("Error al solicitar servicio");
+
+        await MySwal.fire({
+          icon: "success",
+          title: "Solicitud enviada",
+          text: `Has solicitado "${service.name}" correctamente.`,
+          background: "#0a0f1c",
+          color: "#e5e7eb",
+          confirmButtonColor: "#3B82F6",
+        });
+      } catch (err) {
+        console.error(err);
+        MySwal.fire({
+          icon: "error",
+          title: "Error",
+          text: "No se pudo enviar la solicitud",
           background: "#0a0f1c",
           color: "#e5e7eb",
           confirmButtonColor: "#3B82F6",
@@ -141,7 +194,7 @@ const ServiceCard = ({ service }: { service: Service }) => {
           {user && user.role !== "admin" && (
             <button
               disabled={!service.active}
-              onClick={() => window.location.href = `/services/${service._id}`}
+              onClick={handleRequestService}
               className={`flex-1 text-center text-white text-sm px-3 py-2 rounded-md transition-all ${
                 service.active
                   ? "bg-green-600 hover:bg-green-500"

@@ -54,7 +54,7 @@ const NavBar = () => {
       {/* Logo */}
       <Link href="/" className="flex items-center">
         <Image src="/logo.png" alt="Logo" width={45} height={45} className="mr-2" />
-        <span className="text-white font-bold text-lg hidden sm:block">TechNova</span>
+        <span className="text-white font-bold text-lg hidden sm:block">NovaTech</span>
       </Link>
 
       {/* Botón menú hamburguesa (solo móvil) */}
@@ -91,7 +91,23 @@ const NavBar = () => {
           </Link>
         ))}
 
-        {/* 🔹 Solo visible para ADMIN */}
+        {/* 🔹 Solo Admin: Gestión de solicitudes */}
+        {user?.role === 'admin' && (
+          <Link
+            href="/orders"
+            onClick={() => setMenuOpen(false)}
+            className={`
+              mx-2 px-4 py-2 text-center rounded-xl transition-all duration-200
+              ${pathname === '/orders'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-300 hover:bg-purple-700 hover:text-white'}
+            `}
+          >
+            Solicitudes
+          </Link>
+        )}
+
+        {/* 🔹 Solo Admin: Crear servicio */}
         {user?.role === 'admin' && (
           <Link
             href="/services/new"
@@ -104,6 +120,22 @@ const NavBar = () => {
             `}
           >
             Crear servicio
+          </Link>
+        )}
+
+        {/* 🔹 Usuario normal: Mis solicitudes */}
+        {user && user.role !== 'admin' && (
+          <Link
+            href="/my-orders"
+            onClick={() => setMenuOpen(false)}
+            className={`
+              mx-2 px-4 py-2 text-center rounded-xl transition-all duration-200
+              ${pathname === '/my-orders'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-300 hover:bg-purple-700 hover:text-white'}
+            `}
+          >
+            Mis solicitudes
           </Link>
         )}
 
